@@ -15,9 +15,9 @@ from database import pool
 BASE_URL = "https://bulletins.nyu.edu"
 
 # Load the AI model used to understand the meaning of the course text.
-# We use all-MiniLM-L6-v2 because it is extremely memory efficient (~80MB) for cloud hosting.
-print("Loading sentence transformer model (all-MiniLM-L6-v2)...")
-model = SentenceTransformer("all-MiniLM-L6-v2")
+# We load the model synchronously when the script starts
+print("Loading sentence transformer model (Nomic Embed Text v1.5)...")
+model = SentenceTransformer("nomic-ai/nomic-embed-text-v1.5", trust_remote_code=True)
 
 # Browser-like headers to make the scraper look like a human visitor
 HEADERS = {
@@ -98,9 +98,9 @@ async def run_scraper():
                 print(f"Scraping subject: {subject['text']}")
                 courses = await scrape_courses_for_subject(subject["href"])
                 
-                for c in courses:
-                    # Clean input text for the embedding model
-                    doc_text = f"{c['title']} {c['description']}"
+                for r in courses:
+                    # Nomic uses "search_document" prefix for context when embedding documents
+                    doc_text = f"search_document: {r['title']} {r['description']}"
                     
                     # Convert the text into an array of numbers (the vector embedding)
                     embedding = model.encode(doc_text).tolist()
@@ -114,12 +114,10 @@ async def run_scraper():
                             title = EXCLUDED.title,
                             description = EXCLUDED.description,
                             embedding = EXCLUDED.embedding
-                    """, (c["id"], c["title"], c["description"], c["subject"], vector_str))
+                    """, (r["id"], r["title"], r["description"], r["subject"], vector_str))
                     
                 await conn.commit()
                 print(f"Inserted {len(courses)} courses for {subject['text']}")
-                # Wait 1 second before moving to the next subject to be polite to NYU's server
-                await asyncio.sleep(1)
 
 # If this script is run directly from the terminal, start the scraper
 if __name__ == "__main__":

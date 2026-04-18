@@ -41,8 +41,8 @@ async def init_db():
                     WHERE attrelid = 'courses'::regclass AND attname = 'embedding';
                 """)
                 res = await cur.fetchone()
-                if res and res[0] != 384:
-                    print("Vector dimensions changed (detected old 768-dim table). Resetting courses table...")
+                if res and res[0] != 768:
+                    print("Vector dimensions changed (detected old 384-dim table). Resetting courses table...")
                     await cur.execute("DROP TABLE IF EXISTS courses CASCADE;")
             except psycopg.errors.UndefinedTable:
                 # Table doesn't exist yet, which is fine
@@ -64,7 +64,7 @@ async def init_db():
                     title TEXT NOT NULL,
                     description TEXT NOT NULL,
                     subject VARCHAR(50),
-                    embedding VECTOR(384)
+                    embedding VECTOR(768)
                 );
             """)
 

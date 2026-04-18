@@ -22,10 +22,9 @@ import asyncio
 # ---------------------------------------------------------
 # Artificial Intelligence Model Initialization
 # ---------------------------------------------------------
-print("Loading model for search endpoints...")
-# We use Nomic to turn search terms (like "ethics") into math vectors 
-# so we can compare them to course descriptions.
-model = SentenceTransformer("nomic-ai/nomic-embed-text-v1.5", trust_remote_code=True)
+# We use all-MiniLM-L6-v2 because it is extremely memory efficient (~80MB) for cloud hosting.
+print("Loading sentence transformer model (all-MiniLM-L6-v2)...")
+model = SentenceTransformer("all-MiniLM-L6-v2")
 
 # ---------------------------------------------------------
 # Application Setup
@@ -195,8 +194,7 @@ async def search(request: Request, q: str = Form(...), email: str = Depends(get_
         return "<div>Please enter a query.</div>"
     
     # 1. Convert their search query into a mathematical vector representation
-    # Nomic expects the "search_query: " prefix to know context.
-    doc_text = f"search_query: {q}"
+    doc_text = f"{q}"
     embedding = model.encode(doc_text).tolist()
     # Format the Python list into a Postgres-compatible vector string
     vector_str = "[" + ",".join(map(str, embedding)) + "]"

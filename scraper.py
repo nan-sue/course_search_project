@@ -15,9 +15,9 @@ from database import pool
 BASE_URL = "https://bulletins.nyu.edu"
 
 # Load the AI model used to understand the meaning of the course text.
-# We load the model synchronously when the script starts
-print("Loading sentence transformer model (Nomic Embed Text v1.5)...")
-model = SentenceTransformer("nomic-ai/nomic-embed-text-v1.5", trust_remote_code=True)
+# We use all-MiniLM-L6-v2 because it is extremely memory efficient (~80MB) for cloud hosting.
+print("Loading sentence transformer model (all-MiniLM-L6-v2)...")
+model = SentenceTransformer("all-MiniLM-L6-v2")
 
 async def scrape_subjects():
     """
@@ -93,8 +93,8 @@ async def run_scraper():
                 courses = await scrape_courses_for_subject(subject["href"])
                 
                 for c in courses:
-                    # Nomic uses "search_document" prefix for context when embedding documents
-                    doc_text = f"search_document: {c['title']} {c['description']}"
+                    # Clean input text for the embedding model
+                    doc_text = f"{c['title']} {c['description']}"
                     
                     # Convert the text into an array of numbers (the vector embedding)
                     embedding = model.encode(doc_text).tolist()

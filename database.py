@@ -32,34 +32,40 @@ async def init_db():
         except Exception:
             pass
 
-        async with conn.cursor() as cur:
-            # 1. Enable the pgvector extension for similarity search
-            await cur.execute("CREATE EXTENSION IF NOT EXISTS vector;")
-            
-            # Now properly register Postgres vector support into psycopg
-            await register_vector_async(conn)
+            async with conn.cursor() as cur:
+                # 1. Enable pgvector
+                await cur.execute("CREATE EXTENSION IF NOT EXISTS vector;")
+                await register_vector_async(conn)
 
-            # 2. Users Table: Stores standard user profiles.
-            await cur.execute("""
-                CREATE TABLE IF NOT EXISTS users (
-                    id SERIAL PRIMARY KEY,
-                    email VARCHAR(255) UNIQUE NOT NULL,
-                    is_admin BOOLEAN DEFAULT FALSE,
-                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-                );
-            """)
+                # Reset courses table if vector dimensions changed (e.g. 768 -> 384)
+                await cur.execute("""
+                    SELECT atttypmod FROM pg_attribute 
+                    WHERE attrelid = 'courses'::regclass AND attname = 'embedding';
+                """)
+                res = await cur.fetchone()
+                if res and res[0] != 384:
+                    print("Vector dimensions changed. Resetting courses table...")
+                    await cur.execute("DROP TABLE IF EXISTS courses CASCADE;")
 
-            # 3. Courses Table: Stores our class information alongside a high-dimensional mathematical vector.
-            # Notice the `embedding VECTOR(768)`. Nomic generates 768 numbers representing the course's meaning.
-            await cur.execute("""
-                CREATE TABLE IF NOT EXISTS courses (
-                    id VARCHAR(255) PRIMARY KEY,
-                    title TEXT NOT NULL,
-                    description TEXT NOT NULL,
-                    subject VARCHAR(50),
-                    embedding VECTOR(768)
-                );
-            """)
+                # 2. Setup Tables
+                await cur.execute("""
+                    CREATE TABLE IF NOT EXISTS users (
+                        id SERIAL PRIMARY KEY,
+                        email VARCHAR(255) UNIQUE NOT NULL,
+                        is_admin BOOLEAN DEFAULT FALSE,
+                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                    );
+                """)
+                
+                await cur.execute("""
+                    CREATE TABLE IF NOT EXISTS courses (
+                        id VARCHAR(255) PRIMARY KEY,
+                        title TEXT NOT NULL,
+                        description TEXT NOT NULL,
+                        subject VARCHAR(50),
+                        embedding VECTOR(384)
+                    );
+                """)
 
             # 4. Create an 'ivfflat' index.
             # Instead of comparing a search term to all 17,000 courses line-by-line (which is slow),

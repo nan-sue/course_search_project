@@ -1,5 +1,6 @@
 fastapi
 uvicorn[standard]
+gunicorn
 jinja2
 python-multipart
 psycopg[binary]
@@ -10,3 +11,4 @@ PyJWT
 beautifulsoup4
 httpx
 pydantic-settings
+psutil

@@ -88,8 +88,9 @@ async def run_scraper():
     subjects = await scrape_subjects()
     print(f"Found {len(subjects)} subjects.")
     
-    # Open the database connection pool specifically for this script run
-    await pool.open()
+    # Initialize the database and check for vector dimension changes
+    from database import init_db
+    await init_db()
     
     async with pool.connection() as conn:
         async with conn.cursor() as cur:

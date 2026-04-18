@@ -1,0 +1,30 @@
+{# 
+  This component is a reusable HTMX button. 
+  It is sent back by the server to update the button's state (color, text, action) 
+  without a full page refresh.
+#}
+
+{% if type == 'save' %}
+    {# Toggle between 'save' and 'unsave' based on current state #}
+    {% set next_action = 'unsave' if is_active else 'save' %}
+    {% set button_vals = {"course_id": course_id, "action": next_action} %}
+    
+    <button class="action-btn {% if is_active %}btn-saved{% endif %}" 
+        hx-post="/course/action"
+        hx-target="this"
+        hx-swap="outerHTML"
+        hx-vals='{{ button_vals | tojson }}'>
+        {% if is_active %}★ Saved{% else %}☆ Save{% endif %}
+    </button>
+
+{% elif type == 'upvote' %}
+    {% set button_vals = {"course_id": course_id, "action": "upvote", "q": query} %}
+
+    <button class="action-btn {% if is_active %}btn-upvoted{% endif %}" 
+        hx-post="/course/action"
+        hx-target="this"
+        hx-swap="outerHTML"
+        hx-vals='{{ button_vals | tojson }}'>
+        {% if is_active %}👍 Upvoted{% else %}👍 Helpful{% endif %}
+    </button>
+{% endif %}

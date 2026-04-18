@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <div class="auth-form" id="auth-box">
+        <h2 style="margin-bottom: 20px">NYU Login</h2>
+        <form hx-post="/auth/send-otp" hx-target="#auth-box">
+            <label>@nyu.edu Email</label>
+            <input type="email" name="email" required placeholder="netid@nyu.edu" />
+            <button class="btn" style="width: 100%" type="submit">Send OTP</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

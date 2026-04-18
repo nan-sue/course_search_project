@@ -1,0 +1,16 @@
+<h2 style="margin-bottom: 20px">Check your email</h2>
+<p style="color:var(--text-muted); margin-bottom: 20px;">Code sent to {{ email }}</p>
+
+{% if mock_otp %}
+<div style="padding:15px; background:rgba(87,6,140,0.1); border:1px solid var(--accent); color:var(--accent); border-radius:8px; margin-bottom:20px; text-align:center;">
+    <strong>DEV MODE ACTIVE</strong><br>
+    Your mock OTP is: <span style="font-size:1.5em; font-weight:bold; letter-spacing:3px;">{{ mock_otp }}</span>
+</div>
+{% endif %}
+
+<form hx-post="/auth/verify" hx-target="#auth-box">
+    <input type="hidden" name="email" value="{{ email }}" />
+    <label>6-digit OTP</label>
+    <input type="text" name="otp" required autocomplete="off" />
+    <button class="btn" style="width: 100%" type="submit">Verify & Login</button>
+</form>

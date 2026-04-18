@@ -1,0 +1,12 @@
+fastapi
+uvicorn[standard]
+jinja2
+python-multipart
+psycopg[binary]
+pgvector
+sentence-transformers
+resend
+PyJWT
+beautifulsoup4
+httpx
+pydantic-settings

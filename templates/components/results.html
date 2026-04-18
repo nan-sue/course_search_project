@@ -1,0 +1,30 @@
+{% for c in courses %}
+<div class="glass-card" id="course-card-{{ loop.index }}">
+    <div class="course-code">{{ c.id }} {% if c.subject %}• {{ c.subject }}{% endif %}</div>
+    <div class="course-title">{{ c.title }}</div>
+    <div class="course-desc">{{ c.description }}</div>
+
+    <div class="actions">
+        {% with course_id=c.id, type='save', is_active=c.is_saved %}
+            {% include "components/action_button.html" %}
+        {% endwith %}
+
+        {% with course_id=c.id, type='upvote', is_active=c.is_upvoted, query=query %}
+            {% include "components/action_button.html" %}
+        {% endwith %}
+
+        <button class="action-btn" style="margin-left: auto;" 
+            hx-get="/course/details?code={{ c.id }}"
+            hx-target="#details-{{ loop.index }}" 
+            hx-indicator="#loading-{{ loop.index }}"
+            onclick="document.getElementById('details-{{ loop.index }}').classList.toggle('hidden')">
+            View Schedule ▼
+        </button>
+    </div>
+
+    <div id="loading-{{ loop.index }}" class="htmx-indicator"></div>
+    <div id="details-{{ loop.index }}" class="details-container" style="margin-top: 15px;"></div>
+</div>
+{% else %}
+<p style="text-align:center; color: var(--text-muted)">No courses matched your search.</p>
+{% endfor %}

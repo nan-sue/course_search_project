@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+        <h1>My Courses</h1>
+        <a href="/" class="btn" style="text-decoration:none">Back to Search</a>
+    </div>
+    <p class="subtitle">Your bookmarked schedule picks.</p>
+
+    <div id="results">
+        {% include "components/results.html" %}
+    </div>
+</div>
+{% endblock %}

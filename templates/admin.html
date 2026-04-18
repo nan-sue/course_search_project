@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+        <h1>Admin Control Panel</h1>
+        <a href="/" class="btn" style="text-decoration:none">Back to Search</a>
+    </div>
+    
+    <div class="glass-card" style="margin-top:40px;">
+        <h2>System Stats</h2>
+        <ul style="margin:20px 0; color:var(--text-muted); line-height:2">
+            <li>Total Users: <strong>{{ stats.users }}</strong></li>
+            <li>Saved Courses: <strong>{{ stats.saved }}</strong></li>
+            <li>Upvotes Recorded: <strong>{{ stats.upvotes }}</strong></li>
+            <li>Total Indexed Courses: <strong>{{ stats.courses }}</strong></li>
+        </ul>
+    </div>
+
+    <div class="glass-card">
+        <h2>Scraper Management</h2>
+        <p style="color:var(--text-muted); margin: 10px 0 20px;">Triggering the scraper will re-download classes from NYU bulletins and compute missing NLP embeddings.</p>
+        <button class="btn" hx-post="/admin/scrape" hx-swap="outerHTML">Run Scraper (Background)</button>
+    </div>
+</div>
+{% endblock %}

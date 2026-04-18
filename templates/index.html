@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h1>NYU course search</h1>
+    <p class="subtitle">Discover courses by their true meaning, using Nomic vector similarity.</p>
+
+    <div style="max-width: 600px; margin: 0 auto 50px;">
+        <form hx-post="/search" hx-target="#results" hx-indicator="#indicator">
+            <input name="q" type="text" class="search-input" placeholder="E.g., ethics in artificial intelligence..." required />
+        </form>
+    </div>
+
+    <div id="indicator" class="htmx-indicator"></div>
+    <div id="results">
+        <!-- Results load here -->
+    </div>
+</div>
+{% endblock %}

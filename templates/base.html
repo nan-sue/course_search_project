@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NYU course search</title>
+    <!-- HTMX -->
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap');
+
+        :root {
+            --bg-color: #f8f9fa;
+            --text-main: #1d1d1f;
+            --text-muted: #6e6e73;
+            --accent: #57068c;
+            /* NYU violet */
+            --accent-light: #8900e1;
+            --card-bg: rgba(255, 255, 255, 0.85);
+            --border-color: rgba(0, 0, 0, 0.08);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: var(--bg-color);
+            background-image:
+                radial-gradient(circle at 15% 50%, rgba(87, 6, 140, 0.15), transparent 25%),
+                radial-gradient(circle at 85% 30%, rgba(137, 0, 225, 0.1), transparent 25%);
+            background-attachment: fixed;
+            color: var(--text-main);
+            font-family: 'Outfit', sans-serif;
+            min-height: 100vh;
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        h1 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            text-align: center;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, var(--accent), var(--accent-light));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 1.2rem;
+            margin-bottom: 50px;
+        }
+
+        .header-actions {
+            display: flex;
+            justify-content: flex-end;
+            padding: 1rem 20px;
+        }
+
+        .header-actions a {
+            color: var(--text-muted);
+            text-decoration: none;
+            margin-left: 20px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: none;
+            background: var(--accent);
+            color: white;
+            cursor: pointer;
+            font-family: inherit;
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        .btn:hover {
+            background: var(--accent-light);
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 18px 24px;
+            font-size: 1.2rem;
+            border-radius: 30px;
+            border: 1px solid var(--border-color);
+            background: rgba(255, 255, 255, 0.5);
+            color: var(--text-main);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s;
+            outline: none;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
+        }
+
+        .search-input:focus {
+            border-color: var(--accent-light);
+            box-shadow: 0 0 20px rgba(87, 6, 140, 0.15);
+        }
+
+        .glass-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 24px;
+            backdrop-filter: blur(12px);
+            margin-bottom: 20px;
+            transition: transform 0.2s, box-shadow 0.2s;
+            position: relative;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+        }
+
+        .course-code {
+            color: var(--accent-light);
+            font-weight: 600;
+            font-size: 0.9rem;
+            letter-spacing: 1px;
+        }
+
+        .course-title {
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin-top: 4px;
+        }
+
+        .course-desc {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            margin-top: 10px;
+        }
+
+        .actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+            border-top: 1px solid var(--border-color);
+            padding-top: 16px;
+        }
+
+        .action-btn {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-family: inherit;
+            font-size: 0.9rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+
+        .action-btn:hover {
+            background: rgba(87, 6, 140, 0.05);
+        }
+
+        /* Helper classes for active states */
+        .btn-saved {
+            color: var(--accent-light) !important;
+            border-color: var(--accent) !important;
+        }
+
+        .btn-upvoted {
+            color: #2ecc71 !important;
+            border-color: #2ecc71 !important;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .htmx-indicator {
+            display: none;
+            margin: 20px auto;
+            width: 30px;
+            height: 30px;
+            border: 3px solid rgba(87, 6, 140, 0.1);
+            border-radius: 50%;
+            border-top-color: var(--accent);
+            animation: spin 1s infinite linear;
+        }
+
+        .htmx-indicator.htmx-request,
+        .htmx-request .htmx-indicator {
+            display: block;
+        }
+
+        @keyframes spin {
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .auth-form {
+            max-width: 400px;
+            margin: 100px auto;
+            background: var(--card-bg);
+            padding: 40px;
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.05);
+        }
+
+        .auth-form input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            background: rgba(255, 255, 255, 0.8);
+            color: var(--text-main);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header-actions">
+        {% if email %}
+        <a href="/my-courses">My Courses</a>
+        <a href="/admin">Admin Base</a>
+        <span style="color:var(--text-muted); margin-left:20px;">{{ email }}</span>
+        <button class="btn" style="margin-left:20px; background:transparent; border: 1px solid var(--border-color)"
+            hx-post="/auth/logout">Logout</button>
+        {% else %}
+        <a href="/login">Login</a>
+        {% endif %}
+    </div>
+
+    {% block content %}{% endblock %}
+</body>
+
+</html>

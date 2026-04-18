@@ -19,12 +19,17 @@ BASE_URL = "https://bulletins.nyu.edu"
 print("Loading sentence transformer model (all-MiniLM-L6-v2)...")
 model = SentenceTransformer("all-MiniLM-L6-v2")
 
+# Browser-like headers to make the scraper look like a human visitor
+HEADERS = {
+    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+}
+
 async def scrape_subjects():
     """
     Step 1: Get a list of all course subjects (e.g., Math, Computer Science)
     by looking at the links on the main courses page.
     """
-    async with httpx.AsyncClient() as client:
+    async with httpx.AsyncClient(headers=HEADERS) as client:
         response = await client.get(f"{BASE_URL}/courses/")
         soup = BeautifulSoup(response.text, "html.parser")
         
@@ -45,7 +50,7 @@ async def scrape_courses_for_subject(subject_href: str):
     Step 2: Given a specific subject link, fetch its page and read all 
     listed courses, extracting their codes, titles, and descriptions.
     """
-    async with httpx.AsyncClient() as client:
+    async with httpx.AsyncClient(headers=HEADERS) as client:
         response = await client.get(f"{BASE_URL}{subject_href}")
         soup = BeautifulSoup(response.text, "html.parser")
         
@@ -112,6 +117,8 @@ async def run_scraper():
                     
                 await conn.commit()
                 print(f"Inserted {len(courses)} courses for {subject['text']}")
+                # Wait 1 second before moving to the next subject to be polite to NYU's server
+                await asyncio.sleep(1)
 
 # If this script is run directly from the terminal, start the scraper
 if __name__ == "__main__":
